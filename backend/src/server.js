@@ -7,13 +7,19 @@ import jobRoutes from './routes/jobRoutes.js';
 dotenv.config();
 
 const app = express();
+// PORT is intentionally read from env so Render can inject its own value at runtime
 const PORT = process.env.PORT || 5000;
 
 // ─── Connect to MongoDB ───────────────────────────────────────────────────────
 connectDB();
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  })
+);
 app.use(express.json());
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
@@ -28,3 +34,4 @@ app.get('/', (_req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
