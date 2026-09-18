@@ -1,368 +1,277 @@
-import { useState, useEffect, useCallback } from 'react';
-import api from '../api/jobApi';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useJobs } from '../hooks/useJobs';
+import JobCard from '../components/JobCard';
+import { SkeletonCard } from '../components/SkeletonLoader';
+import ErrorBanner from '../components/ErrorBanner';
+import EmptyState from '../components/EmptyState';
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// ─── Filter Constants ─────────────────────────────────────────────────────────
+const STATUSES = ['All', 'Applied', 'Assessment', 'Interviewing', 'Offer', 'Ghosted', 'Rejected'];
+const SOURCES  = ['All Sources', 'LinkedIn', 'Wellfound', 'Company Website', 'Referral', 'Cold Email', 'Other'];
 
-const STATUSES = ['All', 'Applied', 'Assessment', 'Interviewing', 'Rejected', 'Offer', 'Ghosted'];
-const SOURCES  = ['All', 'LinkedIn', 'Wellfound', 'Company Website', 'Referral', 'Cold Email', 'Other'];
+// ─── Date Grouping Helper ─────────────────────────────────────────────────────
+const SECTION_ORDER = ['Last 7 Days', 'This Month', 'Older'];
 
-const STATUS_STYLES = {
-  Applied:      'bg-slate-700/60 text-slate-300',
-  Assessment:   'bg-amber-900/50 text-amber-300',
-  Interviewing: 'bg-yellow-900/50 text-yellow-300',
-  Rejected:     'bg-red-900/50   text-red-400',
-  Offer:        'bg-emerald-900/50 text-emerald-300',
-  Ghosted:      'bg-zinc-800/70  text-zinc-400',
-};
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function daysBetween(date) {
-  return Math.floor((Date.now() - new Date(date).getTime()) / 86_400_000);
+function groupJob(job) {
+  if (!job.dateApplied) return 'Older';
+  const ms = Date.now() - new Date(job.dateApplied).getTime();
+  const days = Math.floor(ms / 86_400_000);
+  if (days <= 7) return 'Last 7 Days';
+  if (days <= 31) return 'This Month';
+  return 'Older';
 }
-
-function groupJobs(jobs) {
-  const groups = { 'Last 7 Days': [], 'This Month': [], Older: [] };
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  for (const job of jobs) {
-    const days = daysBetween(job.dateApplied);
-    if (days <= 7) {
-      groups['Last 7 Days'].push(job);
-    } else if (new Date(job.dateApplied) >= monthStart) {
-      groups['This Month'].push(job);
-    } else {
-      groups['Older'].push(job);
-    }
-  }
-  return groups;
-}
-
-function formatDate(iso) {
-  return new Date(iso).toLocaleDateString('en-IN', {
-    day: 'numeric', month: 'short', year: 'numeric',
-  });
-}
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function FilterChips({ label, options, selected, onChange }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className="px-4 text-[10px] font-semibold uppercase tracking-widest text-[var(--color-muted)]">
-        {label}
-      </span>
-      <div className="flex gap-2 overflow-x-auto px-4 pb-0.5 scrollbar-none">
-        {options.map((opt) => (
-          <button
-            key={opt}
-            onClick={() => onChange(opt === 'All' ? '' : opt)}
-            className={[
-              'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-all duration-150',
-              (opt === 'All' ? selected === '' : selected === opt)
-                ? 'bg-[var(--color-brand-500)] text-white shadow-md'
-                : 'bg-[var(--color-surface-3)] text-[var(--color-muted)] hover:text-[var(--color-text)]',
-            ].join(' ')}
-          >
-            {opt}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function StatusBadge({ status }) {
-  return (
-    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${STATUS_STYLES[status] ?? ''}`}>
-      {status}
-    </span>
-  );
-}
-
-function StatusPicker({ currentStatus, onSelect, onClose }) {
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-md rounded-t-2xl bg-[var(--color-surface-2)] p-5 pb-8"
-        style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[var(--color-text)]">Update Status</h3>
-          <button onClick={onClose} className="text-[var(--color-muted)] hover:text-[var(--color-text)]">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="size-5">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {STATUSES.filter((s) => s !== 'All').map((s) => (
-            <button
-              key={s}
-              onClick={() => onSelect(s)}
-              className={[
-                'rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all duration-150',
-                s === currentStatus
-                  ? 'ring-2 ring-[var(--color-brand-400)] ring-offset-1 ring-offset-[var(--color-surface-2)]'
-                  : '',
-                STATUS_STYLES[s] ?? 'bg-[var(--color-surface-3)] text-[var(--color-muted)]',
-              ].join(' ')}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function JobCard({ job, onStatusUpdate }) {
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [updating, setUpdating] = useState(false);
-
-  async function handleStatusSelect(newStatus) {
-    if (newStatus === job.status) { setPickerOpen(false); return; }
-    setUpdating(true);
-    setPickerOpen(false);
-    try {
-      const { data } = await api.put(`/jobs/${job._id}`, { status: newStatus });
-      onStatusUpdate(job._id, data.data);
-    } catch {
-      /* silent — parent still holds the old data */
-    } finally {
-      setUpdating(false);
-    }
-  }
-
-  return (
-    <>
-      <div className={`rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)] p-4 transition-opacity duration-200 ${updating ? 'opacity-50' : ''}`}>
-        {/* Top row: company + status badge */}
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-[var(--color-text)]">{job.companyName}</p>
-            <p className="truncate text-xs text-[var(--color-muted)]">{job.jobTitle}</p>
-          </div>
-          <StatusBadge status={job.status} />
-        </div>
-
-        {/* Meta row: source + date */}
-        <div className="mt-3 flex items-center justify-between gap-2">
-          <span className="flex items-center gap-1 text-[11px] text-[var(--color-muted)]">
-            {/* source icon */}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="size-3.5 shrink-0">
-              <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-            {job.source}
-          </span>
-          <span className="text-[11px] text-[var(--color-muted)]">
-            {formatDate(job.dateApplied)}
-          </span>
-        </div>
-
-        {/* Update status action */}
-        <div className="mt-3 flex justify-end">
-          <button
-            onClick={() => setPickerOpen(true)}
-            disabled={updating}
-            className="flex items-center gap-1 rounded-lg bg-[var(--color-surface-3)] px-2.5 py-1 text-[11px] font-medium text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)] disabled:cursor-not-allowed"
-          >
-            {updating ? (
-              <>
-                <svg className="size-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-                </svg>
-                Updating…
-              </>
-            ) : (
-              <>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="size-3.5">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-                Update status
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {pickerOpen && (
-        <StatusPicker
-          currentStatus={job.status}
-          onSelect={handleStatusSelect}
-          onClose={() => setPickerOpen(false)}
-        />
-      )}
-    </>
-  );
-}
-
-function SectionHeader({ label, count }) {
-  return (
-    <div className="flex items-center gap-2 px-1">
-      <span className="text-xs font-semibold uppercase tracking-widest text-[var(--color-muted)]">{label}</span>
-      <span className="rounded-full bg-[var(--color-surface-3)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-muted)]">
-        {count}
-      </span>
-    </div>
-  );
-}
-
-// ─── Loading skeleton ─────────────────────────────────────────────────────────
-
-function SkeletonCard() {
-  return (
-    <div className="animate-pulse rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)] p-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 space-y-2">
-          <div className="h-3.5 w-2/3 rounded bg-[var(--color-surface-3)]" />
-          <div className="h-2.5 w-1/2 rounded bg-[var(--color-surface-3)]" />
-        </div>
-        <div className="h-5 w-20 rounded-full bg-[var(--color-surface-3)]" />
-      </div>
-      <div className="mt-4 flex justify-between">
-        <div className="h-2.5 w-24 rounded bg-[var(--color-surface-3)]" />
-        <div className="h-2.5 w-20 rounded bg-[var(--color-surface-3)]" />
-      </div>
-    </div>
-  );
-}
-
-// ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function JobList() {
-  const [jobs,    setJobs]    = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState(null);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const highlightId = searchParams.get('highlight');
+  const highlightRef = useRef(null);
 
-  const [statusFilter, setStatusFilter] = useState('');
-  const [sourceFilter, setSourceFilter] = useState('');
-  const [sort,         setSort]         = useState('newest');
+  // Filter and Sort states
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [sourceFilter, setSourceFilter] = useState('All Sources');
+  const [sort, setSort] = useState('newest');
+  const [search, setSearch] = useState('');
 
-  // Fetch jobs whenever filters/sort change
-  const fetchJobs = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = {};
-      if (statusFilter) params.status = statusFilter;
-      if (sourceFilter) params.source = sourceFilter;
-      params.sort = sort;
+  // Fetch real MongoDB data using our useJobs hook
+  const {
+    jobs,
+    loading,
+    error,
+    refetch,
+    updateJobStatus,
+  } = useJobs({
+    status: statusFilter,
+    source: sourceFilter,
+    sort,
+  });
 
-      const { data } = await api.get('/jobs', { params });
-      setJobs(data.data);
-    } catch (err) {
-      setError(err.response?.data?.error ?? 'Failed to load applications. Is the backend running?');
-    } finally {
-      setLoading(false);
+  // Scroll to highlighted card if navigated from Dashboard follow-up
+  useEffect(() => {
+    if (!loading && highlightId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  }, [statusFilter, sourceFilter, sort]);
+  }, [loading, highlightId]);
 
-  useEffect(() => { fetchJobs(); }, [fetchJobs]);
+  // Client-side instant keyword search (company name or job title)
+  const visibleJobs = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return jobs;
+    return jobs.filter((j) => {
+      const c = (j.companyName || '').toLowerCase();
+      const t = (j.jobTitle || '').toLowerCase();
+      const s = (j.source || '').toLowerCase();
+      return c.includes(q) || t.includes(q) || s.includes(q);
+    });
+  }, [jobs, search]);
 
-  // Inline status update — no full refetch needed
-  function handleStatusUpdate(id, updatedJob) {
-    setJobs((prev) => prev.map((j) => (j._id === id ? updatedJob : j)));
-  }
+  // Group into chronological sections
+  const groups = useMemo(() => {
+    return SECTION_ORDER.map((label) => ({
+      label,
+      items: visibleJobs.filter((j) => groupJob(j) === label),
+    })).filter((g) => g.items.length > 0);
+  }, [visibleJobs]);
 
-  const grouped = groupJobs(jobs);
-  const totalVisible = jobs.length;
+  const hasActiveFilters =
+    statusFilter !== 'All' || sourceFilter !== 'All Sources' || search.trim() !== '';
+
+  const clearFilters = () => {
+    setStatusFilter('All');
+    setSourceFilter('All Sources');
+    setSearch('');
+  };
 
   return (
-    <div className="flex flex-col gap-0 pb-2">
-      {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-10 bg-[var(--color-surface)]/90 pb-3 pt-5 backdrop-blur-md">
-        <div className="flex items-baseline justify-between px-4">
-          <h1 className="text-xl font-bold text-[var(--color-text)]">Applications</h1>
-          {!loading && (
-            <span className="text-xs text-[var(--color-muted)]">
-              {totalVisible} {totalVisible === 1 ? 'result' : 'results'}
+    <div className="flex flex-col min-h-full pb-20">
+      {/* ── Top Bar ─────────────────────────────────────────────────────────────── */}
+      <header className="bg-surface/90 backdrop-blur-md sticky top-0 z-40 px-4 py-3 flex items-center justify-between border-b border-outline-variant/30">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-primary-container text-surface-container-lowest flex items-center justify-center text-[12px] font-bold">
+            JT
+          </div>
+          <span className="text-[17px] font-bold text-on-surface tracking-tight">Trckr</span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => navigate('/add')}
+          className="w-8 h-8 rounded-full bg-primary-container text-surface-container-lowest flex items-center justify-center shadow-xs active:scale-95 transition-transform"
+          title="Add application"
+        >
+          <span className="material-symbols-outlined text-[18px]">add</span>
+        </button>
+      </header>
+
+      {/* ── Main Canvas ─────────────────────────────────────────────────────────── */}
+      <main className="px-4 pb-6 pt-3 space-y-3.5 flex-1">
+        {/* Title and Count */}
+        <section className="flex items-center justify-between pt-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-[24px] font-extrabold text-on-surface tracking-tight">
+              Applications
+            </h1>
+            {!loading && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-surface-container-high text-secondary text-[11px] font-bold">
+                {visibleJobs.length}
+              </span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={refetch}
+            disabled={loading}
+            className="text-[12px] font-semibold text-secondary hover:text-primary flex items-center gap-1 active:scale-95 disabled:opacity-50"
+          >
+            <span
+              className={`material-symbols-outlined text-[16px] ${loading ? 'animate-spin' : ''}`}
+            >
+              refresh
             </span>
+            <span>Refresh</span>
+          </button>
+        </section>
+
+        {/* Error Alert */}
+        {error && <ErrorBanner message={error} onRetry={refetch} />}
+
+        {/* Search Field */}
+        <div className="relative w-full">
+          <span className="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-secondary">
+            <span className="material-symbols-outlined text-[18px]">search</span>
+          </span>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search company, job role, or source…"
+            className="w-full h-11 pl-10 pr-9 bg-surface-container-lowest border border-outline-variant/40 rounded-xl text-[13px] text-on-surface placeholder:text-outline focus:border-primary-container focus:outline-none transition-colors shadow-xs"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch('')}
+              className="absolute inset-y-0 right-3 flex items-center text-secondary hover:text-primary"
+            >
+              <span className="material-symbols-outlined text-[16px]">close</span>
+            </button>
           )}
         </div>
 
-        {/* Sort toggle */}
-        <div className="mt-3 flex items-center gap-2 px-4">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-muted)]">Sort</span>
-          <button
-            onClick={() => setSort((s) => (s === 'newest' ? 'oldest' : 'newest'))}
-            className="flex items-center gap-1.5 rounded-full bg-[var(--color-surface-3)] px-3 py-1 text-xs font-medium text-[var(--color-text)] transition-colors"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="size-3.5">
-              {sort === 'newest'
-                ? <><polyline points="6 9 12 15 18 9" /></>
-                : <><polyline points="18 15 12 9 6 15" /></>
-              }
-            </svg>
-            {sort === 'newest' ? 'Newest first' : 'Oldest first'}
-          </button>
+        {/* ── Filters ───────────────────────────────────────────────────────────── */}
+        <div className="space-y-2 pt-0.5">
+          {/* Status horizontal chips */}
+          <div className="flex items-center gap-1.5 overflow-x-auto py-1 -mx-4 px-4 no-scrollbar">
+            {STATUSES.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setStatusFilter(s)}
+                className={`shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-bold transition-all active:scale-95 ${
+                  statusFilter === s
+                    ? 'bg-primary-container text-surface-container-lowest shadow-xs'
+                    : 'bg-surface-container-lowest border border-outline-variant/50 text-secondary hover:border-secondary'
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+
+          {/* Sources and Sort controls */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 flex-1 min-w-0 no-scrollbar">
+              {SOURCES.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSourceFilter(s)}
+                  className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold transition-colors ${
+                    sourceFilter === s
+                      ? 'bg-secondary-container text-on-secondary-container shadow-xs'
+                      : 'bg-surface-container-lowest border border-outline-variant/40 text-secondary hover:text-on-surface'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+
+            {/* Sort Toggle */}
+            <div className="shrink-0 flex items-center bg-surface-container p-0.5 rounded-lg border border-outline-variant/30">
+              {[
+                ['newest', 'Newest'],
+                ['oldest', 'Oldest'],
+              ].map(([val, label]) => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setSort(val)}
+                  className={`px-2 py-0.5 text-[10px] font-bold rounded-[6px] transition-all ${
+                    sort === val
+                      ? 'bg-surface-container-lowest text-primary shadow-xs'
+                      : 'text-secondary hover:text-primary'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Filter chips */}
-        <div className="mt-3 flex flex-col gap-2.5">
-          <FilterChips label="Status" options={STATUSES} selected={statusFilter} onChange={setStatusFilter} />
-          <FilterChips label="Source" options={SOURCES}  selected={sourceFilter} onChange={setSourceFilter} />
-        </div>
-      </div>
-
-      {/* ── Body ────────────────────────────────────────────────────────────── */}
-      <div className="px-4 pt-3">
-        {/* Error state */}
-        {error && (
-          <div className="rounded-xl border border-red-800/50 bg-red-900/20 px-4 py-3 text-sm text-red-400">
-            {error}
+        {/* ── Loading Skeleton State ────────────────────────────────────────────── */}
+        {loading && (
+          <div className="space-y-3 pt-1">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
           </div>
         )}
 
-        {/* Loading skeletons */}
-        {loading && !error && (
-          <div className="flex flex-col gap-3">
-            {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
-          </div>
+        {/* ── Empty State ──────────────────────────────────────────────────────── */}
+        {!loading && !error && visibleJobs.length === 0 && (
+          <EmptyState
+            isFiltered={hasActiveFilters}
+            onClearFilters={clearFilters}
+          />
         )}
 
-        {/* Empty state */}
-        {!loading && !error && totalVisible === 0 && (
-          <div className="flex flex-col items-center gap-3 py-16 text-center">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.2}
-              className="size-14 text-[var(--color-muted)]">
-              <rect x="2" y="7" width="20" height="14" rx="2" />
-              <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
-              <line x1="12" y1="12" x2="12" y2="16" />
-              <line x1="10" y1="14" x2="14" y2="14" />
-            </svg>
-            <p className="text-sm font-medium text-[var(--color-muted)]">No applications found</p>
-            <p className="text-xs text-[var(--color-muted)]/60">
-              {statusFilter || sourceFilter ? 'Try clearing your filters' : 'Add your first application to get started'}
-            </p>
-          </div>
-        )}
-
-        {/* Grouped job cards */}
-        {!loading && !error && totalVisible > 0 && (
-          <div className="flex flex-col gap-6 pb-4">
-            {Object.entries(grouped).map(([section, sectionJobs]) => {
-              if (sectionJobs.length === 0) return null;
-              return (
-                <div key={section} className="flex flex-col gap-3">
-                  <SectionHeader label={section} count={sectionJobs.length} />
-                  {sectionJobs.map((job) => (
-                    <JobCard key={job._id} job={job} onStatusUpdate={handleStatusUpdate} />
-                  ))}
+        {/* ── Grouped Job Cards List ───────────────────────────────────────────── */}
+        {!loading && !error && groups.length > 0 && (
+          <div className="space-y-5 pt-1">
+            {groups.map(({ label, items }) => (
+              <section key={label} className="space-y-2">
+                <div className="flex items-center justify-between px-1">
+                  <h2 className="text-[11px] tracking-wider text-secondary uppercase font-extrabold">
+                    {label}
+                  </h2>
+                  <span className="text-[10px] text-secondary font-semibold">
+                    {items.length} {items.length === 1 ? 'application' : 'applications'}
+                  </span>
                 </div>
-              );
-            })}
+
+                <div className="space-y-2.5">
+                  {items.map((job) => {
+                    const isHighlighted = job._id === highlightId;
+                    return (
+                      <JobCard
+                        key={job._id}
+                        job={job}
+                        onStatusUpdate={updateJobStatus}
+                        highlighted={isHighlighted}
+                        cardRef={isHighlighted ? highlightRef : null}
+                      />
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

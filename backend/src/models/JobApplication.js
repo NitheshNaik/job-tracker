@@ -6,17 +6,20 @@ const jobApplicationSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Company name is required'],
       trim: true,
+      alias: 'company',
     },
 
     jobTitle: {
       type: String,
       required: [true, 'Job title is required'],
       trim: true,
+      alias: 'title',
     },
 
     jobLink: {
       type: String,
       trim: true,
+      alias: 'link',
     },
 
     source: {
@@ -28,6 +31,7 @@ const jobApplicationSchema = new mongoose.Schema(
     resumeUsed: {
       type: String,
       trim: true,
+      alias: 'resume',
     },
 
     status: {
@@ -39,6 +43,7 @@ const jobApplicationSchema = new mongoose.Schema(
     referralContact: {
       type: String,
       trim: true,
+      alias: 'referral',
     },
 
     dateApplied: {

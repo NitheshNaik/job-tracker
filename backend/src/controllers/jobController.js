@@ -11,13 +11,35 @@ const fail = (res, error, status = 500) =>
 // ─── POST /api/jobs ───────────────────────────────────────────────────────────
 export const createJob = async (req, res) => {
   try {
-    const job = await JobApplication.create(req.body);
+    const data = { ...req.body };
+
+    // Support field name aliases (e.g., company vs companyName, title vs jobTitle)
+    if (data.company && !data.companyName) data.companyName = data.company;
+    if (data.title && !data.jobTitle) data.jobTitle = data.title;
+    if (data.position && !data.jobTitle) data.jobTitle = data.position;
+    if (data.link && !data.jobLink) data.jobLink = data.link;
+    if (data.url && !data.jobLink) data.jobLink = data.url;
+    if (data.referral && !data.referralContact) data.referralContact = data.referral;
+    if (data.resume && !data.resumeUsed) data.resumeUsed = data.resume;
+
+    // Clean empty string dates so Mongoose doesn't fail with CastError
+    if (data.followUpDate === '' || data.followUpDate === null) {
+      delete data.followUpDate;
+    }
+    if (data.dateApplied === '' || data.dateApplied === null) {
+      delete data.dateApplied;
+    }
+
+    const job = await JobApplication.create(data);
     return ok(res, job, 201);
   } catch (err) {
     if (err.name === 'ValidationError') {
       return fail(res, err.message, 400);
     }
-    return fail(res, 'Server error while creating job application');
+    if (err.name === 'CastError') {
+      return fail(res, `Invalid data format for ${err.path}: ${err.value}`, 400);
+    }
+    return fail(res, err.message || 'Server error while creating job application');
   }
 };
 
@@ -32,10 +54,11 @@ export const getJobs = async (req, res) => {
     if (status) filter.status = status;
     if (source) filter.source = source;
 
-    // sort: newest (desc) is the default; "oldest" flips to asc
+    // sort: newest (desc: -1) is the default; "oldest" flips to asc (1)
     const sortOrder = sort === 'oldest' ? 1 : -1;
 
-    const jobs = await JobApplication.find(filter).sort({ dateApplied: sortOrder });
+    // Fetch from MongoDB, sorting newest by createdAt: -1 (or dateApplied)
+    const jobs = await JobApplication.find(filter).sort({ createdAt: sortOrder, dateApplied: sortOrder });
 
     return ok(res, jobs);
   } catch (err) {
@@ -46,9 +69,15 @@ export const getJobs = async (req, res) => {
 // ─── PUT /api/jobs/:id ────────────────────────────────────────────────────────
 export const updateJob = async (req, res) => {
   try {
+    const data = { ...req.body };
+    if (data.company && !data.companyName) data.companyName = data.company;
+    if (data.title && !data.jobTitle) data.jobTitle = data.title;
+    if (data.followUpDate === '' || data.followUpDate === null) delete data.followUpDate;
+    if (data.dateApplied === '' || data.dateApplied === null) delete data.dateApplied;
+
     const job = await JobApplication.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      data,
       { new: true, runValidators: true }
     );
 

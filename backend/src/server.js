@@ -16,8 +16,19 @@ connectDB();
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile, curl) or any localhost / 127.0.0.1 origin
+      if (
+        !origin ||
+        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ||
+        origin === process.env.FRONTEND_URL
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true); // Dev fallback
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
   })
 );
 app.use(express.json());
