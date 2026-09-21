@@ -2,23 +2,23 @@ import { useState } from 'react';
 
 // ─── Status badge color mapping ───────────────────────────────────────────────
 export const STATUS_BADGE = {
-  Applied:      { bg: '#F4F4F5', text: '#52525B', border: '#E4E4E7' },
-  Assessment:   { bg: '#FEF3EB', text: '#8C531B', border: '#F8D8BE' },
-  Interviewing: { bg: '#EBF3FE', text: '#1D4ED8', border: '#BFDBFE' },
-  Rejected:     { bg: '#FBEAE9', text: '#8C3933', border: '#F5C6C3' },
-  Offer:        { bg: '#E6EFE9', text: '#2C5E3B', border: '#C2DEC9' },
-  Ghosted:      { bg: '#F4F4F5', text: '#71717A', border: '#E4E4E7' },
+  Applied:      { bg: 'rgba(142,142,147,0.12)', text: '#3C3C43',  border: 'transparent' },
+  Assessment:   { bg: 'rgba(255,149,0,0.12)',   text: '#FF9500',  border: 'transparent' },
+  Interviewing: { bg: 'rgba(0,122,255,0.12)',   text: '#007AFF',  border: 'transparent' },
+  Rejected:     { bg: 'rgba(255,59,48,0.12)',   text: '#FF3B30',  border: 'transparent' },
+  Offer:        { bg: 'rgba(52,199,89,0.12)',   text: '#34C759',  border: 'transparent' },
+  Ghosted:      { bg: 'rgba(142,142,147,0.10)', text: '#8E8E93',  border: 'transparent' },
 };
 
-// ─── Deterministic Avatar palette based on Company Name ───────────────────────
+// ─── Deterministic Avatar palette ────────────────────────────────────────────
 const PALETTE = [
-  { bg: '#635BFF14', text: '#635BFF', border: '#635BFF33' },
-  { bg: '#0D948814', text: '#0D9488', border: '#0D948833' },
-  { bg: '#E03B5214', text: '#E03B52', border: '#E03B5233' },
-  { bg: '#10B98114', text: '#059669', border: '#10B98133' },
-  { bg: '#D9770614', text: '#B45309', border: '#D9770633' },
-  { bg: '#3B82F614', text: '#2563EB', border: '#3B82F633' },
-  { bg: '#8B5CF614', text: '#7C3AED', border: '#8B5CF633' },
+  { bg: 'rgba(99,91,255,0.12)',  text: '#635BFF' },
+  { bg: 'rgba(13,148,136,0.12)', text: '#0D9488' },
+  { bg: 'rgba(224,59,82,0.12)',  text: '#E03B52' },
+  { bg: 'rgba(16,185,129,0.12)', text: '#059669' },
+  { bg: 'rgba(217,119,6,0.12)',  text: '#B45309' },
+  { bg: 'rgba(59,130,246,0.12)', text: '#2563EB' },
+  { bg: 'rgba(139,92,246,0.12)', text: '#7C3AED' },
 ];
 
 function getAvatarStyle(name = '') {
@@ -34,49 +34,60 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-// ─── Inline Status Picker Modal / Sheet ───────────────────────────────────────
+// ─── iOS Action Sheet (Status Picker) ─────────────────────────────────────────
 function StatusPickerModal({ currentStatus, onSelect, onClose }) {
   const statuses = ['Applied', 'Assessment', 'Interviewing', 'Offer', 'Ghosted', 'Rejected'];
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end bg-black/40 backdrop-blur-[2px] transition-opacity"
+      className="fixed inset-0 z-50 flex items-end"
+      style={{ background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[375px] mx-auto bg-surface rounded-t-3xl border-t border-outline-variant/30 shadow-2xl p-5 pb-8 space-y-3 animate-slideUp"
+        className="w-full max-w-[390px] mx-auto rounded-t-[28px] p-5 pb-8 space-y-3 animate-slideUp"
+        style={{
+          background: 'rgba(255,255,255,0.96)',
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          boxShadow: '0 -8px 32px rgba(0,0,0,0.12)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="w-10 h-1 bg-outline-variant rounded-full mx-auto mb-2" />
-        <div className="flex items-center justify-between">
-          <p className="text-[14px] font-bold text-on-surface">Change Application Status</p>
+        {/* Drag handle */}
+        <div className="w-9 h-1 rounded-full mx-auto mb-1" style={{ background: 'rgba(60,60,67,0.18)' }} />
+
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-[16px] font-semibold" style={{ color: '#000' }}>Change Status</p>
           <button
             type="button"
             onClick={onClose}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-secondary hover:text-primary"
+            className="w-7 h-7 rounded-full flex items-center justify-center transition-opacity active:opacity-50"
+            style={{ background: 'rgba(120,120,128,0.12)' }}
           >
-            <span className="material-symbols-outlined text-[18px]">close</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#8E8E93' }}>close</span>
           </button>
         </div>
 
         <div className="grid grid-cols-2 gap-2 pt-1">
           {statuses.map((s) => {
-            const badge = STATUS_BADGE[s] || { bg: '#F4F4F5', text: '#52525B' };
+            const badge = STATUS_BADGE[s] || STATUS_BADGE.Applied;
             const isActive = s === currentStatus;
             return (
               <button
                 key={s}
                 type="button"
                 onClick={() => onSelect(s)}
-                className={`py-2 px-3 rounded-xl text-[12px] font-bold text-left flex items-center justify-between transition-all active:scale-95 border ${
-                  isActive
-                    ? 'ring-2 ring-primary-container border-primary-container shadow-xs'
-                    : 'border-outline-variant/30 hover:opacity-90'
-                }`}
-                style={{ backgroundColor: badge.bg, color: badge.text }}
+                className="py-3 px-3.5 rounded-[14px] text-[13px] font-semibold text-left flex items-center justify-between transition-all duration-150 active:scale-[0.96]"
+                style={{
+                  background: badge.bg,
+                  color: badge.text,
+                  outline: isActive ? `2px solid ${badge.text}` : 'none',
+                  outlineOffset: '-1px',
+                }}
               >
                 <span>{s}</span>
                 {isActive && (
-                  <span className="material-symbols-outlined text-[16px] font-bold">check</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px', fontVariationSettings: "'wght' 600" }}>check</span>
                 )}
               </button>
             );
@@ -88,24 +99,23 @@ function StatusPickerModal({ currentStatus, onSelect, onClose }) {
 }
 
 /**
- * Robust JobCard Component with resilient handling of optional/null fields
- * and responsive text truncation.
+ * iOS-style JobCard — white borderless card with Apple multi-layer shadow
  */
 export default function JobCard({ job, onStatusUpdate, highlighted, cardRef }) {
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [updating, setUpdating] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [updating,   setUpdating]   = useState(false);
+  const [expanded,   setExpanded]   = useState(false);
 
   const company = job?.companyName?.trim() || 'Unknown Company';
-  const title = job?.jobTitle?.trim() || 'Untitled Role';
-  const status = job?.status || 'Applied';
-  const source = job?.source || 'Other';
-  const notes = job?.notes?.trim() || null;
+  const title   = job?.jobTitle?.trim()   || 'Untitled Role';
+  const status  = job?.status             || 'Applied';
+  const source  = job?.source             || 'Other';
+  const notes   = job?.notes?.trim()      || null;
   const referral = job?.referralContact?.trim() || null;
-  const jobLink = job?.jobLink?.trim() || null;
-  const resume = job?.resumeUsed?.trim() || null;
+  const jobLink  = job?.jobLink?.trim()   || null;
+  const resume   = job?.resumeUsed?.trim() || null;
 
-  const av = getAvatarStyle(company);
+  const av    = getAvatarStyle(company);
   const badge = STATUS_BADGE[status] || STATUS_BADGE.Applied;
 
   async function handleStatusSelect(newStatus) {
@@ -123,129 +133,141 @@ export default function JobCard({ job, onStatusUpdate, highlighted, cardRef }) {
     <>
       <article
         ref={cardRef}
-        className={`bg-surface-container-lowest rounded-2xl p-4 transition-all duration-200 border card-elevation-1 space-y-2.5 ${
-          updating ? 'opacity-50 pointer-events-none' : ''
-        } ${
-          highlighted
-            ? 'border-primary-container ring-2 ring-primary-container/30 bg-primary-container/[0.02]'
-            : 'border-outline-variant/40 hover:border-outline-variant'
-        }`}
+        className="transition-all duration-300 active:scale-[0.98]"
+        style={{
+          background: '#FFFFFF',
+          borderRadius: '20px',
+          boxShadow: highlighted
+            ? '0 0 0 2px #007AFF, 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08)'
+            : '0 1px 0 rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)',
+          opacity: updating ? 0.55 : 1,
+          pointerEvents: updating ? 'none' : 'auto',
+        }}
       >
-        {/* Top row: Avatar + Company/Title + Status Badge */}
-        <div className="flex items-start justify-between gap-2.5">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            {/* Deterministic initial avatar */}
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-[15px] shrink-0 uppercase shadow-xs"
-              style={{
-                backgroundColor: av.bg,
-                color: av.text,
-                border: `1px solid ${av.border}`,
-              }}
-            >
-              {company[0]}
+        <div className="p-4 space-y-3">
+          {/* Top row */}
+          <div className="flex items-start justify-between gap-2.5">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              {/* Avatar */}
+              <div
+                className="w-10 h-10 rounded-[12px] flex items-center justify-center font-semibold text-[15px] shrink-0 uppercase"
+                style={{ background: av.bg, color: av.text }}
+              >
+                {company[0]}
+              </div>
+
+              {/* Company + Title */}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <h3
+                    className="text-[15px] font-semibold leading-tight truncate"
+                    style={{ color: '#000' }}
+                  >
+                    {company}
+                  </h3>
+                  {jobLink && (
+                    <a
+                      href={jobLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="shrink-0 inline-flex items-center transition-opacity active:opacity-50"
+                      style={{ color: '#007AFF' }}
+                      title="Open job link"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>open_in_new</span>
+                    </a>
+                  )}
+                </div>
+                <p
+                  className="text-[13px] leading-tight truncate mt-0.5"
+                  style={{ color: '#8E8E93' }}
+                >
+                  {title}
+                </p>
+              </div>
             </div>
 
-            {/* Truncated text with line-clamp/truncate prevents UI breaks */}
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <h3 className="text-[15px] font-bold text-on-surface leading-tight truncate">
-                  {company}
-                </h3>
-                {jobLink && (
-                  <a
-                    href={jobLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-secondary hover:text-primary shrink-0 inline-flex items-center"
-                    title="Open job link"
-                  >
-                    <span className="material-symbols-outlined text-[15px]">open_in_new</span>
-                  </a>
-                )}
-              </div>
-              <p className="text-[13px] font-medium text-secondary leading-tight truncate mt-0.5">
-                {title}
+            {/* Status Badge */}
+            <button
+              type="button"
+              onClick={() => setPickerOpen(true)}
+              title="Tap to change status"
+              className="inline-flex items-center gap-0.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-tight shrink-0 transition-all duration-150 active:scale-[0.93]"
+              style={{ background: badge.bg, color: badge.text }}
+            >
+              <span>{status}</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>expand_more</span>
+            </button>
+          </div>
+
+          {/* Tags: Referral + Resume */}
+          {(referral || resume) && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {referral && (
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[6px] text-[10px] font-medium truncate max-w-[180px]"
+                  style={{ background: 'rgba(120,120,128,0.10)', color: '#3C3C43' }}
+                >
+                  <span className="material-symbols-outlined shrink-0" style={{ fontSize: '11px' }}>person</span>
+                  <span className="truncate">Ref: {referral}</span>
+                </span>
+              )}
+              {resume && (
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[6px] text-[10px] font-medium truncate max-w-[140px]"
+                  style={{ background: 'rgba(0,122,255,0.08)', color: '#007AFF' }}
+                >
+                  <span className="material-symbols-outlined shrink-0" style={{ fontSize: '11px' }}>description</span>
+                  <span className="truncate">{resume}</span>
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Notes */}
+          {notes && (
+            <div
+              onClick={() => setExpanded(!expanded)}
+              className="text-[12px] rounded-[10px] px-3 py-2 cursor-pointer transition-colors duration-150 active:opacity-70"
+              style={{ background: 'rgba(120,120,128,0.08)', color: '#3C3C43' }}
+            >
+              <p className={expanded ? 'break-words' : 'line-clamp-1'}>
+                <span className="font-semibold" style={{ color: '#8E8E93' }}>Note: </span>
+                {notes}
               </p>
             </div>
-          </div>
+          )}
 
-          {/* Status Badge */}
-          <button
-            type="button"
-            onClick={() => setPickerOpen(true)}
-            title="Click to change status"
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold tracking-tight shrink-0 transition-transform active:scale-95 border"
-            style={{
-              backgroundColor: badge.bg,
-              color: badge.text,
-              borderColor: badge.border,
-            }}
-          >
-            <span>{status}</span>
-            <span className="material-symbols-outlined text-[13px]">expand_more</span>
-          </button>
-        </div>
-
-        {/* Optional Data Variations: Referral & Resume tags */}
-        {(referral || resume) && (
-          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-            {referral && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container text-on-surface-variant text-[10px] font-semibold truncate max-w-[180px]">
-                <span className="material-symbols-outlined text-[12px] shrink-0">person</span>
-                <span className="truncate">Ref: {referral}</span>
-              </span>
-            )}
-            {resume && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary-container/50 text-on-secondary-container text-[10px] font-semibold truncate max-w-[140px]">
-                <span className="material-symbols-outlined text-[12px] shrink-0">description</span>
-                <span className="truncate">{resume}</span>
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Optional Field: Notes (truncates by default, can be toggled) */}
-        {notes && (
+          {/* Footer */}
           <div
-            onClick={() => setExpanded(!expanded)}
-            className="text-[12px] text-secondary/90 bg-surface-container/50 rounded-xl px-2.5 py-1.5 cursor-pointer hover:bg-surface-container transition-colors"
+            className="pt-2.5 flex items-center justify-between text-[11px]"
+            style={{ borderTop: '0.5px solid rgba(60,60,67,0.12)' }}
           >
-            <p className={expanded ? 'break-words' : 'line-clamp-1'}>
-              <span className="font-semibold text-secondary">Note: </span>
-              {notes}
-            </p>
+            <span className="flex items-center gap-1.5 min-w-0" style={{ color: '#8E8E93' }}>
+              <span
+                className="w-1.5 h-1.5 rounded-full shrink-0"
+                style={{ background: badge.text }}
+              />
+              <span className="truncate">{source}</span>
+              <span>·</span>
+              <span className="shrink-0">{formatDate(job.dateApplied)}</span>
+            </span>
+
+            <button
+              type="button"
+              onClick={() => setPickerOpen(true)}
+              disabled={updating}
+              className="flex items-center gap-0.5 text-[12px] font-semibold transition-opacity active:opacity-50 shrink-0 ml-2"
+              style={{ color: '#007AFF' }}
+            >
+              {updating
+                ? <span className="material-symbols-outlined animate-spin" style={{ fontSize: '14px' }}>progress_activity</span>
+                : <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit_note</span>
+              }
+              <span>{updating ? 'Updating…' : 'Update'}</span>
+            </button>
           </div>
-        )}
-
-        {/* Bottom footer: Source & DateApplied */}
-        <div className="pt-2 border-t border-[#eceae5] flex items-center justify-between text-[11px] text-secondary">
-          <span className="flex items-center gap-1.5 min-w-0">
-            <span
-              className="w-1.5 h-1.5 rounded-full shrink-0"
-              style={{ backgroundColor: badge.text }}
-            />
-            <span className="truncate">{source}</span>
-            <span>•</span>
-            <span className="shrink-0">{formatDate(job.dateApplied)}</span>
-          </span>
-
-          <button
-            type="button"
-            onClick={() => setPickerOpen(true)}
-            disabled={updating}
-            className="flex items-center gap-0.5 font-bold text-primary-container hover:opacity-80 transition-opacity active:scale-95 shrink-0 ml-2"
-          >
-            {updating ? (
-              <span className="material-symbols-outlined text-[14px] animate-spin">
-                progress_activity
-              </span>
-            ) : (
-              <span className="material-symbols-outlined text-[14px]">edit_note</span>
-            )}
-            <span>{updating ? 'Updating…' : 'Update'}</span>
-          </button>
         </div>
       </article>
 

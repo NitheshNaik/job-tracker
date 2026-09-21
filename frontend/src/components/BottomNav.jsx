@@ -1,8 +1,8 @@
 import { NavLink } from 'react-router-dom';
 
 const tabs = [
-  { to: '/',     label: 'Dashboard', icon: 'grid_view', end: true },
-  { to: '/add',  label: 'Add',       icon: 'add',       isAdd: true },
+  { to: '/',     label: 'Dashboard', icon: 'grid_view',  end: true },
+  { to: '/add',  label: 'Add',       icon: 'add',        isAdd: true },
   { to: '/jobs', label: 'Jobs',      icon: 'work' },
 ];
 
@@ -10,42 +10,78 @@ export default function BottomNav() {
   return (
     <nav
       aria-label="Main Navigation"
-      className="absolute bottom-0 left-0 right-0 w-full z-50 flex items-center justify-around px-3 py-2 bg-surface/90 backdrop-blur-md border-t border-outline-variant/30 shadow-[0_-4px_16px_rgba(23,40,55,0.04)]"
-      style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+      className="absolute bottom-0 left-0 right-0 w-full z-50 flex items-center justify-around px-2"
+      style={{
+        paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))',
+        paddingTop: '0.5rem',
+        background: 'rgba(255,255,255,0.82)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        borderTop: '0.5px solid rgba(60,60,67,0.20)',
+      }}
     >
       {tabs.map(({ to, label, icon, end, isAdd }) => (
         <NavLink
           key={to}
           to={to}
           end={end}
-          className={({ isActive }) =>
-            `flex flex-col items-center justify-center gap-1 py-1 px-3 transition-colors duration-150 active:scale-95 ${
-              isActive
-                ? 'text-primary-container font-semibold'
-                : 'text-secondary hover:text-primary'
-            }`
-          }
+          className="flex flex-col items-center justify-center gap-0.5 py-1 px-4 transition-all duration-150 active:scale-[0.88] select-none"
         >
           {({ isActive }) =>
             isAdd ? (
               <>
-                <div className="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md -mt-3 mb-0.5">
-                  <span className="material-symbols-outlined text-[22px]">{icon}</span>
+                {/* iOS-style floating add button */}
+                <div
+                  className="w-11 h-11 rounded-full flex items-center justify-center -mt-6 mb-0.5 transition-all duration-150 active:scale-90"
+                  style={{
+                    background: isActive
+                      ? 'linear-gradient(145deg, #1A8FFF, #007AFF)'
+                      : 'linear-gradient(145deg, #339DFF, #007AFF)',
+                    boxShadow: '0 4px 16px rgba(0,122,255,0.45), 0 1px 3px rgba(0,122,255,0.3)',
+                  }}
+                >
+                  <span
+                    className="material-symbols-outlined text-white"
+                    style={{ fontSize: '22px', fontVariationSettings: "'wght' 500" }}
+                  >
+                    add
+                  </span>
                 </div>
-                <span className="text-[10px] font-semibold tracking-tight">{label}</span>
+                <span
+                  className="text-[10px] font-semibold tracking-tight"
+                  style={{ color: isActive ? '#007AFF' : '#8E8E93' }}
+                >
+                  {label}
+                </span>
               </>
             ) : (
               <>
+                <div className="relative flex items-center justify-center w-8 h-8">
+                  {/* Active indicator pill */}
+                  {isActive && (
+                    <div
+                      className="absolute inset-0 rounded-xl"
+                      style={{ background: 'rgba(0,122,255,0.12)' }}
+                    />
+                  )}
+                  <span
+                    className="material-symbols-outlined relative z-10"
+                    style={{
+                      fontSize: '22px',
+                      color: isActive ? '#007AFF' : '#8E8E93',
+                      fontVariationSettings: isActive ? "'FILL' 1, 'wght' 500" : "'FILL' 0, 'wght' 400",
+                      transition: 'color 0.15s ease, font-variation-settings 0.15s ease',
+                    }}
+                  >
+                    {icon}
+                  </span>
+                </div>
                 <span
-                  className="material-symbols-outlined text-[22px]"
-                  style={isActive ? { fontVariationSettings: "'FILL' 1" } : {}}
+                  className="text-[10px] font-semibold tracking-tight transition-colors duration-150"
+                  style={{ color: isActive ? '#007AFF' : '#8E8E93' }}
                 >
-                  {icon}
+                  {label}
                 </span>
-                <span className="text-[10px] font-semibold tracking-tight">{label}</span>
-                {isActive && (
-                  <span className="w-1 h-1 rounded-full bg-primary-container absolute -bottom-0.5" />
-                )}
               </>
             )
           }

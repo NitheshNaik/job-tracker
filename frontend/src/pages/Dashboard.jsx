@@ -6,12 +6,12 @@ import EmptyState from '../components/EmptyState';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const PALETTE = [
-  { bg: '#635BFF14', text: '#635BFF', border: '#635BFF33' },
-  { bg: '#0D948814', text: '#0D9488', border: '#0D948833' },
-  { bg: '#E03B5214', text: '#E03B52', border: '#E03B5233' },
-  { bg: '#10B98114', text: '#059669', border: '#10B98133' },
-  { bg: '#D9770614', text: '#B45309', border: '#D9770633' },
-  { bg: '#3B82F614', text: '#2563EB', border: '#3B82F633' },
+  { bg: 'rgba(99,91,255,0.12)',  text: '#635BFF' },
+  { bg: 'rgba(13,148,136,0.12)', text: '#0D9488' },
+  { bg: 'rgba(224,59,82,0.12)',  text: '#E03B52' },
+  { bg: 'rgba(16,185,129,0.12)', text: '#059669' },
+  { bg: 'rgba(217,119,6,0.12)',  text: '#B45309' },
+  { bg: 'rgba(59,130,246,0.12)', text: '#2563EB' },
 ];
 
 function getAvatarStyle(name = '') {
@@ -26,46 +26,88 @@ function daysAgo(dateStr) {
   return Math.max(0, Math.floor(ms / 86_400_000));
 }
 
+// ─── Reusable iOS Section Header ─────────────────────────────────────────────
+function SectionLabel({ children }) {
+  return (
+    <h2 className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: '#8E8E93' }}>
+      {children}
+    </h2>
+  );
+}
+
+// ─── Stat Card ────────────────────────────────────────────────────────────────
+function StatCard({ label, value, sub, iconName, iconBg, iconColor, badge }) {
+  return (
+    <div className="ios-card p-4 flex flex-col justify-between gap-3 transition-all duration-300 active:scale-[0.98]">
+      <div className="flex items-center justify-between">
+        <span className="text-[12px] font-semibold" style={{ color: '#8E8E93' }}>{label}</span>
+        <div
+          className="w-7 h-7 rounded-full flex items-center justify-center"
+          style={{ background: iconBg }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '15px', color: iconColor }}>
+            {iconName}
+          </span>
+        </div>
+      </div>
+      <div>
+        <div className="text-[34px] font-bold tracking-tight leading-none mb-1.5" style={{ color: '#000', letterSpacing: '-0.02em' }}>
+          {value}
+        </div>
+        {badge ? badge : (
+          <span className="text-[11px] font-medium" style={{ color: '#8E8E93' }}>{sub}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const { stats, loading, error, refetch } = useJobStats();
 
   const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'short',
-    day: 'numeric',
+    weekday: 'long', month: 'short', day: 'numeric',
   });
 
-  // Derived metrics from real MongoDB aggregated stats
-  const total = stats?.totalApplied ?? 0;
+  // Derived metrics
+  const total       = stats?.totalApplied ?? 0;
   const statusCounts = stats?.statusCounts || {};
-  const responses =
-    (statusCounts.Interviewing ?? 0) +
-    (statusCounts.Offer ?? 0) +
-    (statusCounts.Rejected ?? 0);
-  const rejRate = stats?.rejectionRate ?? 0;
-  const thisMonth = stats?.appliedThisMonth ?? 0;
-  const lastMonth = stats?.appliedLastMonth ?? 0;
-  const monthDiff = thisMonth - lastMonth;
-  const monthPct =
-    thisMonth + lastMonth > 0
-      ? Math.round((thisMonth / (thisMonth + lastMonth)) * 100)
-      : 50;
-  const followUps = stats?.needingFollowUp || [];
+  const responses   = (statusCounts.Interviewing ?? 0) + (statusCounts.Offer ?? 0) + (statusCounts.Rejected ?? 0);
+  const rejRate     = stats?.rejectionRate ?? 0;
+  const thisMonth   = stats?.appliedThisMonth ?? 0;
+  const lastMonth   = stats?.appliedLastMonth ?? 0;
+  const monthDiff   = thisMonth - lastMonth;
+  const monthPct    = thisMonth + lastMonth > 0
+    ? Math.round((thisMonth / (thisMonth + lastMonth)) * 100)
+    : 50;
+  const followUps   = stats?.needingFollowUp || [];
 
   return (
     <div className="flex flex-col min-h-full pb-20">
-      {/* ── Top App Bar ─────────────────────────────────────────────────────────── */}
-      <header className="bg-surface/90 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-4 py-3 border-b border-outline-variant/30">
+
+      {/* ── iOS Navigation Bar ─────────────────────────────────────────────── */}
+      <header
+        className="sticky top-0 z-40 flex items-center justify-between px-4 pt-12 pb-3"
+        style={{
+          background: 'rgba(242,242,247,0.88)',
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          borderBottom: '0.5px solid rgba(60,60,67,0.18)',
+        }}
+      >
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-primary-container text-surface-container-lowest flex items-center justify-center text-[12px] font-bold tracking-tight shadow-sm">
+          <div
+            className="w-8 h-8 rounded-[10px] flex items-center justify-center text-[12px] font-bold text-white tracking-tight"
+            style={{ background: 'linear-gradient(145deg, #339DFF, #007AFF)', boxShadow: '0 2px 8px rgba(0,122,255,0.35)' }}
+          >
             JT
           </div>
           <div className="flex flex-col">
-            <span className="text-[14px] font-bold tracking-tight text-on-surface leading-none">
+            <span className="text-[15px] font-bold tracking-tight" style={{ color: '#000', letterSpacing: '-0.01em' }}>
               Trckr
             </span>
-            <span className="text-[10px] text-secondary tracking-wide mt-0.5">
+            <span className="text-[10px] font-medium" style={{ color: '#8E8E93' }}>
               Live MongoDB Data
             </span>
           </div>
@@ -76,136 +118,137 @@ export default function Dashboard() {
           onClick={refetch}
           title="Refresh stats"
           disabled={loading}
-          className="w-8 h-8 rounded-full flex items-center justify-center text-secondary hover:text-primary transition-colors active:scale-95 disabled:opacity-50"
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-150 active:scale-90 disabled:opacity-40"
+          style={{ background: 'rgba(120,120,128,0.12)' }}
         >
           <span
-            className={`material-symbols-outlined text-[20px] ${loading ? 'animate-spin' : ''}`}
+            className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}
+            style={{ fontSize: '18px', color: '#007AFF', fontVariationSettings: "'wght' 500" }}
           >
             refresh
           </span>
         </button>
       </header>
 
-      {/* ── Content ─────────────────────────────────────────────────────────────── */}
-      <main className="px-4 pt-4 space-y-4 flex-1">
-        {/* Date & Greeting */}
-        <section className="pt-1">
+      {/* ── Content ──────────────────────────────────────────────────────────── */}
+      <main className="px-4 pt-5 space-y-5 flex-1">
+
+        {/* Greeting + Date */}
+        <section>
+          <p className="text-[13px] font-semibold mb-0.5" style={{ color: '#8E8E93' }}>{today}</p>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-secondary font-bold tracking-wide uppercase">
-              {today}
-            </span>
-            {!loading && !error && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-tertiary-fixed text-tertiary font-bold tracking-tight">
-                {total > 0 ? `${total} Total Tracked` : 'Ready to Start'}
+            <h1
+              className="text-[32px] font-bold tracking-tight"
+              style={{ color: '#000', letterSpacing: '-0.02em', lineHeight: 1.08 }}
+            >
+              Dashboard
+            </h1>
+            {!loading && !error && total > 0 && (
+              <span
+                className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
+                style={{ background: 'rgba(0,122,255,0.10)', color: '#007AFF' }}
+              >
+                {total} Tracked
               </span>
             )}
           </div>
-          <h1 className="text-[26px] leading-tight text-primary font-extrabold tracking-tight mt-1">
-            Dashboard
-          </h1>
-          <p className="text-[13px] text-secondary mt-0.5">Your live job search progress</p>
+          <p className="text-[14px] mt-1" style={{ color: '#8E8E93' }}>Your live job search progress</p>
         </section>
 
         {/* Error State */}
         {error && <ErrorBanner message={error} onRetry={refetch} />}
 
-        {/* ── Stat Cards (Skeletons while loading) ──────────────────────────────── */}
+        {/* ── Stat Cards ───────────────────────────────────────────────────── */}
         <section className="space-y-3">
+          <SectionLabel>Overview</SectionLabel>
+
           {loading ? (
             <>
               <div className="grid grid-cols-2 gap-3">
-                <SkeletonStat />
-                <SkeletonStat />
+                <SkeletonStat /><SkeletonStat />
               </div>
               <SkeletonBanner />
             </>
           ) : !error && (
             <>
               <div className="grid grid-cols-2 gap-3">
-                {/* Total Applied */}
-                <div className="bg-surface-container-lowest p-4 rounded-2xl border border-[#eceae5] card-elevation-1 flex flex-col justify-between">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[12px] text-secondary font-semibold">
-                      Total Applied
-                    </span>
-                    <div className="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-primary-container">
-                      <span className="material-symbols-outlined text-[15px]">send</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[32px] font-extrabold text-primary tracking-tight leading-none mb-2">
-                      {total}
-                    </div>
-                    {thisMonth > 0 ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#E6EFE9] text-[#2C5E3B] text-[10px] font-bold">
-                        +{thisMonth} this month
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-secondary font-medium">0 this month</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Responses */}
-                <div className="bg-surface-container-lowest p-4 rounded-2xl border border-[#eceae5] card-elevation-1 flex flex-col justify-between">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[12px] text-secondary font-semibold">Responses</span>
-                    <div className="w-7 h-7 rounded-full bg-[#FEF3EB] flex items-center justify-center text-[#8C531B]">
-                      <span className="material-symbols-outlined text-[15px]">forum</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[32px] font-extrabold text-primary tracking-tight leading-none mb-2">
-                      {responses}
-                    </div>
-                    <span className="text-secondary text-[11px] font-medium">
-                      {responses > 0 ? `${stats?.responseRate ?? 0}% response rate` : 'Awaiting responses'}
-                    </span>
-                  </div>
-                </div>
+                <StatCard
+                  label="Applied"
+                  value={total}
+                  iconName="send"
+                  iconBg="rgba(0,122,255,0.12)"
+                  iconColor="#007AFF"
+                  badge={
+                    thisMonth > 0
+                      ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: 'rgba(52,199,89,0.12)', color: '#34C759' }}>
+                          +{thisMonth} this month
+                        </span>
+                      : <span className="text-[11px] font-medium" style={{ color: '#8E8E93' }}>0 this month</span>
+                  }
+                />
+                <StatCard
+                  label="Responses"
+                  value={responses}
+                  iconName="forum"
+                  iconBg="rgba(255,149,0,0.12)"
+                  iconColor="#FF9500"
+                  sub={responses > 0 ? `${stats?.responseRate ?? 0}% response rate` : 'Awaiting responses'}
+                />
               </div>
 
-              {/* Rejection Rate & Monthly Comparison */}
-              <div className="bg-surface-container-lowest p-4 rounded-2xl border border-[#eceae5] card-elevation-1 space-y-2.5">
+              {/* Rejection Rate Card */}
+              <div className="ios-card p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[12px] text-secondary font-semibold">Rejection Rate</span>
-                  <span className="text-secondary bg-surface-container px-2 py-0.5 rounded-full text-[10px] font-medium">
+                  <span className="text-[12px] font-semibold" style={{ color: '#8E8E93' }}>Rejection Rate</span>
+                  <span
+                    className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                    style={{ background: 'rgba(120,120,128,0.10)', color: '#8E8E93' }}
+                  >
                     Benchmark: 22%
                   </span>
                 </div>
 
                 <div className="flex items-baseline gap-2">
-                  <span className="text-[26px] font-bold text-primary tracking-tight">
+                  <span className="text-[30px] font-bold tracking-tight" style={{ color: '#000', letterSpacing: '-0.02em' }}>
                     {rejRate}%
                   </span>
                   {total > 0 && rejRate <= 22 && (
-                    <span className="text-[11px] text-[#2C5E3B] font-semibold flex items-center gap-0.5">
-                      <span className="material-symbols-outlined text-[13px]">arrow_downward</span>
-                      {(22 - rejRate).toFixed(1)}% vs benchmark
+                    <span className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: '#34C759' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>trending_down</span>
+                      {(22 - rejRate).toFixed(1)}% below benchmark
                     </span>
                   )}
                   {total > 0 && rejRate > 22 && (
-                    <span className="text-[11px] text-error font-semibold flex items-center gap-0.5">
-                      <span className="material-symbols-outlined text-[13px]">arrow_upward</span>
-                      {(rejRate - 22).toFixed(1)}% above benchmark
+                    <span className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: '#FF3B30' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>trending_up</span>
+                      {(rejRate - 22).toFixed(1)}% above
                     </span>
                   )}
                 </div>
 
-                <div className="pt-2 border-t border-[#eceae5] flex items-center justify-between text-[11px]">
-                  <span className="text-secondary">
-                    {thisMonth} applied this month
-                    {lastMonth > 0 && (
-                      <span className={monthDiff >= 0 ? ' text-[#2C5E3B] font-semibold' : ' text-secondary'}>
-                        {' '}({monthDiff >= 0 ? `+${monthDiff}` : monthDiff} vs last month)
-                      </span>
-                    )}
-                  </span>
-                  <div className="w-16 h-1.5 bg-surface-container rounded-full overflow-hidden">
+                {/* Progress bar */}
+                <div>
+                  <div
+                    className="w-full h-1.5 rounded-full overflow-hidden"
+                    style={{ background: 'rgba(120,120,128,0.12)' }}
+                  >
                     <div
-                      className="bg-primary-container h-full rounded-full transition-all duration-300"
-                      style={{ width: `${monthPct}%` }}
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${monthPct}%`,
+                        background: 'linear-gradient(90deg, #007AFF, #5AC8FA)',
+                      }}
                     />
+                  </div>
+                  <div className="flex items-center justify-between mt-1.5">
+                    <span className="text-[11px]" style={{ color: '#8E8E93' }}>
+                      {thisMonth} this month
+                      {lastMonth > 0 && (
+                        <span style={{ color: monthDiff >= 0 ? '#34C759' : '#8E8E93', fontWeight: 600 }}>
+                          {' '}({monthDiff >= 0 ? `+${monthDiff}` : monthDiff} vs last)
+                        </span>
+                      )}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -213,27 +256,28 @@ export default function Dashboard() {
           )}
         </section>
 
-        {/* ── Needing Follow-up Section ────────────────────────────────────────── */}
-        <section className="space-y-2.5 pt-1">
-          <div className="flex items-center justify-between px-0.5">
+        {/* ── Follow-up Section ─────────────────────────────────────────────── */}
+        <section className="space-y-3 pt-1 pb-2">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h2 className="text-[16px] text-primary font-bold tracking-tight">
-                Needing Follow-up
-              </h2>
+              <SectionLabel>Needing Follow-up</SectionLabel>
               {!loading && followUps.length > 0 && (
-                <span className="inline-flex items-center justify-center px-2 py-0.5 text-[11px] font-bold bg-[#FEF3EB] text-[#8C531B] rounded-full">
+                <span
+                  className="inline-flex items-center justify-center w-5 h-5 text-[11px] font-bold rounded-full text-white"
+                  style={{ background: '#FF9500' }}
+                >
                   {followUps.length}
                 </span>
               )}
             </div>
-
             {!loading && total > 0 && (
               <button
                 type="button"
                 onClick={() => navigate('/jobs')}
-                className="text-primary-container font-semibold hover:underline text-[12px]"
+                className="text-[13px] font-semibold transition-opacity active:opacity-50"
+                style={{ color: '#007AFF' }}
               >
-                View all jobs
+                View all
               </button>
             )}
           </div>
@@ -241,32 +285,34 @@ export default function Dashboard() {
           {/* Skeletons */}
           {loading && (
             <div className="space-y-2">
-              <SkeletonFollowUp />
-              <SkeletonFollowUp />
+              <SkeletonFollowUp /><SkeletonFollowUp />
             </div>
           )}
 
-          {/* Empty follow-ups when collection has jobs */}
+          {/* All caught up */}
           {!loading && !error && followUps.length === 0 && total > 0 && (
-            <div className="bg-surface-container-lowest rounded-2xl p-4 border border-[#eceae5] card-elevation-1 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#E6EFE9] flex items-center justify-center text-[#2C5E3B] shrink-0">
+            <div className="ios-card p-4 flex items-center gap-3">
+              <div
+                className="w-10 h-10 rounded-[12px] flex items-center justify-center shrink-0"
+                style={{ background: 'rgba(52,199,89,0.12)' }}
+              >
                 <span
-                  className="material-symbols-outlined text-[20px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
+                  className="material-symbols-outlined"
+                  style={{ fontSize: '20px', color: '#34C759', fontVariationSettings: "'FILL' 1" }}
                 >
                   check_circle
                 </span>
               </div>
               <div className="min-w-0">
-                <p className="text-[14px] font-bold text-on-surface leading-tight">All caught up!</p>
-                <p className="text-[12px] text-secondary mt-0.5">
-                  No applications are waiting over 14 days without response.
+                <p className="text-[14px] font-semibold" style={{ color: '#000' }}>All caught up!</p>
+                <p className="text-[12px] mt-0.5" style={{ color: '#8E8E93' }}>
+                  No applications waiting over 14 days without response.
                 </p>
               </div>
             </div>
           )}
 
-          {/* Real follow-up rows */}
+          {/* Follow-up rows */}
           {!loading && !error && followUps.length > 0 && (
             <div className="space-y-2">
               {followUps.map((job) => {
@@ -276,34 +322,33 @@ export default function Dashboard() {
                   <article
                     key={job._id}
                     onClick={() => navigate(`/jobs?highlight=${job._id}`)}
-                    className="bg-surface-container-lowest p-3.5 rounded-2xl border border-[#eceae5] card-elevation-1 flex items-center justify-between transition-transform active:scale-[0.99] cursor-pointer hover:border-outline-variant/60"
+                    className="ios-card p-3.5 flex items-center justify-between transition-all duration-300 active:scale-[0.98] cursor-pointer"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <div
-                        className="w-10 h-10 rounded-xl font-bold flex items-center justify-center shrink-0 text-sm shadow-xs"
-                        style={{
-                          backgroundColor: av.bg,
-                          color: av.text,
-                          border: `1px solid ${av.border}`,
-                        }}
+                        className="w-10 h-10 rounded-[12px] font-bold flex items-center justify-center shrink-0 text-[15px]"
+                        style={{ background: av.bg, color: av.text }}
                       >
                         {(job.companyName?.[0] ?? '?').toUpperCase()}
                       </div>
                       <div className="min-w-0 flex-1 pr-2">
-                        <h3 className="text-[14px] font-bold text-primary leading-tight truncate">
+                        <h3 className="text-[14px] font-semibold leading-tight truncate" style={{ color: '#000' }}>
                           {job.companyName}
                         </h3>
-                        <p className="text-secondary text-[12px] leading-tight truncate mt-0.5">
+                        <p className="text-[12px] leading-tight truncate mt-0.5" style={{ color: '#8E8E93' }}>
                           {job.jobTitle}
                         </p>
-                        <span className="inline-block text-[10px] text-secondary/80 mt-1 font-medium">
-                          Applied {days} days ago
+                        <span className="inline-block text-[10px] mt-1 font-medium" style={{ color: '#C7C7CC' }}>
+                          Applied {days}d ago
                         </span>
                       </div>
                     </div>
-                    <span className="px-3 py-1.5 rounded-full bg-primary-container text-surface-container-lowest text-[11px] font-bold tracking-tight shadow-xs shrink-0 flex items-center gap-1">
-                      <span>Follow-up</span>
-                      <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                    <span
+                      className="px-3 py-1.5 rounded-full text-white text-[11px] font-semibold tracking-tight shrink-0 flex items-center gap-1"
+                      style={{ background: '#007AFF' }}
+                    >
+                      Follow-up
+                      <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>arrow_forward</span>
                     </span>
                   </article>
                 );
@@ -312,7 +357,7 @@ export default function Dashboard() {
           )}
         </section>
 
-        {/* ── Zero-Data Empty State (When MongoDB has 0 applications) ───────────── */}
+        {/* Zero-Data Empty State */}
         {!loading && !error && total === 0 && <EmptyState isFiltered={false} />}
       </main>
     </div>
