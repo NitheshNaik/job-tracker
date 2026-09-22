@@ -7,4 +7,38 @@ const api = axios.create({
   },
 });
 
+// ─── Request Interceptor — attach JWT to every outgoing request ───────────────
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// ─── Response Interceptor — handle 401 globally ───────────────────────────────
+// If the server returns 401 (expired/invalid token), wipe local storage and
+// redirect to the login page so the user is never stuck in a broken state.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Only redirect if we're not already on an auth page
+      const isAuthRoute =
+        window.location.pathname === '/login' ||
+        window.location.pathname === '/register';
+
+      if (!isAuthRoute) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

@@ -6,8 +6,12 @@ import {
   deleteJob,
   getJobStats,
 } from '../controllers/jobController.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = Router();
+
+// All job routes require a valid JWT — apply protect globally to this router
+router.use(protect);
 
 // POST   /api/jobs        – create a new job application
 // GET    /api/jobs        – list all (with optional ?status= ?source= ?sort=)

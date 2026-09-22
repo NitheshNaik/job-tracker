@@ -2,6 +2,14 @@ import mongoose from 'mongoose';
 
 const jobApplicationSchema = new mongoose.Schema(
   {
+    // ── Owner reference — every job belongs to exactly one user ──────────────
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'Job application must belong to a user'],
+      index: true, // speeds up per-user queries
+    },
+
     companyName: {
       type: String,
       required: [true, 'Company name is required'],

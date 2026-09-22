@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useJobStats } from '../hooks/useJobs';
+import { useAuth } from '../context/AuthContext';
 import { SkeletonStat, SkeletonBanner, SkeletonFollowUp } from '../components/SkeletonLoader';
 import ErrorBanner from '../components/ErrorBanner';
 import EmptyState from '../components/EmptyState';
@@ -64,7 +65,13 @@ function StatCard({ label, value, sub, iconName, iconBg, iconColor, badge }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const { stats, loading, error, refetch } = useJobStats();
+
+  function handleLogout() {
+    logout();
+    navigate('/login', { replace: true });
+  }
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long', month: 'short', day: 'numeric',
@@ -97,37 +104,56 @@ export default function Dashboard() {
         }}
       >
         <div className="flex items-center gap-2.5">
+          {/* User avatar — initials derived from name or email */}
           <div
-            className="w-8 h-8 rounded-[10px] flex items-center justify-center text-[12px] font-bold text-white tracking-tight"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white tracking-tight"
             style={{ background: 'linear-gradient(145deg, #339DFF, #007AFF)', boxShadow: '0 2px 8px rgba(0,122,255,0.35)' }}
           >
-            JT
+            {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
           </div>
           <div className="flex flex-col">
             <span className="text-[15px] font-bold tracking-tight" style={{ color: '#000', letterSpacing: '-0.01em' }}>
-              Trckr
+              {user?.name || 'Dashboard'}
             </span>
-            <span className="text-[10px] font-medium" style={{ color: '#8E8E93' }}>
-              Live MongoDB Data
+            <span className="text-[10px] font-medium truncate max-w-[140px]" style={{ color: '#8E8E93' }}>
+              {user?.email || 'Live MongoDB Data'}
             </span>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={refetch}
-          title="Refresh stats"
-          disabled={loading}
-          className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-150 active:scale-90 disabled:opacity-40"
-          style={{ background: 'rgba(120,120,128,0.12)' }}
-        >
-          <span
-            className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}
-            style={{ fontSize: '18px', color: '#007AFF', fontVariationSettings: "'wght' 500" }}
+        {/* Right-side controls: refresh + logout */}
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={refetch}
+            title="Refresh stats"
+            disabled={loading}
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-150 active:scale-90 disabled:opacity-40"
+            style={{ background: 'rgba(120,120,128,0.12)' }}
           >
-            refresh
-          </span>
-        </button>
+            <span
+              className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}
+              style={{ fontSize: '18px', color: '#007AFF', fontVariationSettings: "'wght' 500" }}
+            >
+              refresh
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            title="Sign out"
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-150 active:scale-90"
+            style={{ background: 'rgba(255,59,48,0.10)' }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: '17px', color: '#FF3B30', fontVariationSettings: "'wght' 500" }}
+            >
+              logout
+            </span>
+          </button>
+        </div>
       </header>
 
       {/* ── Content ──────────────────────────────────────────────────────────── */}

@@ -2,12 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
-import jobRoutes from './routes/jobRoutes.js';
+import jobRoutes  from './routes/jobRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 dotenv.config();
 
-const app = express();
-// PORT is intentionally read from env so Render can inject its own value at runtime
+const app  = express();
 const PORT = process.env.PORT || 5000;
 
 // ─── Connect to MongoDB ───────────────────────────────────────────────────────
@@ -17,7 +17,6 @@ connectDB();
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (mobile, curl) or any localhost / 127.0.0.1 origin
       if (
         !origin ||
         /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ||
@@ -25,7 +24,7 @@ app.use(
       ) {
         return callback(null, true);
       }
-      return callback(null, true); // Dev fallback
+      return callback(null, true); // Dev fallback — tighten in production if needed
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
@@ -34,7 +33,8 @@ app.use(
 app.use(express.json());
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
-app.use('/api/jobs', jobRoutes);
+app.use('/api/auth', authRoutes);   // register, login, /me
+app.use('/api/jobs', jobRoutes);    // all job CRUD (protected)
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/', (_req, res) => {
@@ -45,4 +45,3 @@ app.get('/', (_req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
