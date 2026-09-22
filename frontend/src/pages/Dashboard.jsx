@@ -91,7 +91,7 @@ export default function Dashboard() {
   const followUps   = stats?.needingFollowUp || [];
 
   return (
-    <div className="flex flex-col min-h-full pb-20">
+    <div className="flex flex-col min-h-full pb-6">
 
       {/* ── iOS Navigation Bar ─────────────────────────────────────────────── */}
       <header

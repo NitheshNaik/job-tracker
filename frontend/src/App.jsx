@@ -60,7 +60,7 @@ function AppShell() {
       <div className="relative w-full max-w-[390px] h-dvh bg-[#F2F2F7] flex flex-col overflow-hidden sm:h-[844px] sm:max-h-[844px] sm:rounded-[52px] sm:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.35),0_0_0_1px_rgba(0,0,0,0.08)] sm:border sm:border-white/20">
 
         {/* Scrollable page content */}
-        <main className={`flex-1 overflow-y-auto min-h-0 ${token ? 'pb-[5rem]' : ''}`}>
+        <main className={`flex-1 overflow-y-auto min-h-0 ${token ? 'pb-16' : ''}`}>
           <Routes>
             {/* ── Public auth routes ── */}
             <Route path="/login"    element={<AuthRoute><Login /></AuthRoute>} />
