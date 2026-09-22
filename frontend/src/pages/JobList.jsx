@@ -96,7 +96,7 @@ export default function JobList() {
 
       {/* ── iOS Navigation Bar ─────────────────────────────────────────────── */}
       <header
-        className="sticky top-0 z-40 flex items-center justify-between px-4 py-3"
+        className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 md:px-8 md:py-4"
         style={{
           background: 'rgba(242,242,247,0.88)',
           backdropFilter: 'blur(24px) saturate(180%)',
@@ -104,7 +104,8 @@ export default function JobList() {
           borderBottom: '0.5px solid rgba(60,60,67,0.18)',
         }}
       >
-        <div className="flex items-center gap-2">
+        <div className="w-full max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
           <div
             className="w-7 h-7 rounded-[8px] flex items-center justify-center text-[11px] font-bold text-white"
             style={{ background: 'linear-gradient(145deg, #339DFF, #007AFF)' }}
@@ -130,10 +131,11 @@ export default function JobList() {
             add
           </span>
         </button>
+        </div>
       </header>
 
       {/* ── Main Canvas ──────────────────────────────────────────────────────── */}
-      <main className="px-4 pb-6 pt-4 space-y-4 flex-1">
+      <main className="px-4 pb-6 pt-4 space-y-4 flex-1 md:px-8 md:pt-6 md:space-y-6 md:max-w-6xl md:mx-auto">
 
         {/* Title + Count */}
         <section className="flex items-center justify-between">
@@ -263,7 +265,7 @@ export default function JobList() {
 
         {/* Loading */}
         {loading && (
-          <div className="space-y-3 pt-1">
+          <div className="space-y-3 pt-1 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
             <SkeletonCard /><SkeletonCard /><SkeletonCard />
           </div>
         )}
@@ -289,7 +291,7 @@ export default function JobList() {
                     {items.length} {items.length === 1 ? 'app' : 'apps'}
                   </span>
                 </div>
-                <div className="space-y-2.5">
+                <div className="space-y-2.5 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
                   {items.map((job) => {
                     const isHighlighted = job._id === highlightId;
                     return (

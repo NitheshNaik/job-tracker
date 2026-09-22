@@ -70,12 +70,12 @@ export default function Login() {
 
   return (
     <div
-      className="min-h-dvh flex flex-col"
+      className="min-h-dvh flex flex-col md:justify-center md:items-center md:py-12"
       style={{ background: '#F2F2F7' }}
     >
       {/* ── Top spacer / decorative header ─────────────────────────────────── */}
       <div
-        className="flex-shrink-0 flex flex-col items-center justify-end px-6 pb-8"
+        className="flex-shrink-0 flex flex-col items-center justify-end px-6 pb-8 md:pt-0 md:min-h-0 md:pb-6"
         style={{ paddingTop: 'max(4rem, env(safe-area-inset-top) + 2rem)', minHeight: '220px' }}
       >
         {/* App icon */}
@@ -100,7 +100,7 @@ export default function Login() {
       </div>
 
       {/* ── Form card ────────────────────────────────────────────────────────── */}
-      <div className="flex-1 px-5 pb-10 space-y-4">
+      <div className="flex-1 px-5 pb-10 space-y-4 md:flex-initial md:w-full md:max-w-md md:px-0 md:pb-0">
         <div
           className="rounded-[20px] p-5 space-y-4"
           style={{

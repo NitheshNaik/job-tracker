@@ -56,11 +56,11 @@ function AppShell() {
   const { token } = useAuth();
 
   return (
-    <div className="flex h-dvh overflow-hidden items-start justify-center bg-[#E5E5EA] sm:py-8 sm:items-center">
-      <div className="relative w-full max-w-[390px] h-dvh bg-[#F2F2F7] flex flex-col overflow-hidden sm:h-[844px] sm:max-h-[844px] sm:rounded-[52px] sm:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.35),0_0_0_1px_rgba(0,0,0,0.08)] sm:border sm:border-white/20">
+    <div className="flex h-dvh overflow-hidden items-start justify-center bg-[#E5E5EA] sm:py-8 sm:items-center md:h-screen md:w-screen md:p-0 md:bg-[#F2F2F7]">
+      <div className="relative w-full max-w-[390px] h-dvh bg-[#F2F2F7] flex flex-col overflow-hidden sm:h-[844px] sm:max-h-[844px] sm:rounded-[52px] sm:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.35),0_0_0_1px_rgba(0,0,0,0.08)] sm:border sm:border-white/20 md:max-w-none md:w-full md:h-screen md:max-h-none md:rounded-none md:shadow-none md:border-none md:flex-row md:overflow-hidden">
 
         {/* Scrollable page content */}
-        <main className={`flex-1 overflow-y-auto min-h-0 ${token ? 'pb-16' : ''}`}>
+        <main className={`flex-1 overflow-y-auto min-h-0 ${token ? 'pb-16 md:ml-20 md:pb-8' : ''}`}>
           <Routes>
             {/* ── Public auth routes ── */}
             <Route path="/login"    element={<AuthRoute><Login /></AuthRoute>} />

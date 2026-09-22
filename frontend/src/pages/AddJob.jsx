@@ -206,7 +206,7 @@ export default function AddJob() {
 
         {/* ── iOS Modal Navigation Bar ──────────────────────────────────────── */}
         <header
-          className="w-full sticky top-0 z-40 flex items-center justify-between px-4 py-3"
+          className="w-full sticky top-0 z-40 flex items-center justify-between px-4 py-3 md:px-8 md:py-4"
           style={{
             background: 'rgba(242,242,247,0.90)',
             backdropFilter: 'blur(24px) saturate(180%)',
@@ -214,6 +214,7 @@ export default function AddJob() {
             borderBottom: '0.5px solid rgba(60,60,67,0.18)',
           }}
         >
+          <div className="w-full max-w-2xl mx-auto flex items-center justify-between">
           <button
             type="button"
             onClick={() => navigate(-1)}
@@ -240,10 +241,11 @@ export default function AddJob() {
           >
             Reset
           </button>
+          </div>
         </header>
 
         {/* ── Form body ─────────────────────────────────────────────────────── */}
-        <div className="flex-1 px-4 pt-5 pb-28 space-y-6">
+        <div className="flex-1 px-4 pt-5 pb-28 space-y-6 md:max-w-2xl md:mx-auto md:w-full md:pt-8 md:pb-20">
 
           {/* Text fields */}
           <section
@@ -345,32 +347,34 @@ export default function AddJob() {
             borderTop: '0.5px solid rgba(60,60,67,0.15)',
           }}
         >
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full h-[52px] font-semibold text-[17px] text-white rounded-[14px] flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed select-none"
-            style={{
-              background: saving
-                ? '#339DFF'
-                : 'linear-gradient(180deg, #339DFF 0%, #007AFF 100%)',
-              boxShadow: '0 4px 16px rgba(0,122,255,0.4), 0 1px 4px rgba(0,122,255,0.2)',
-            }}
-          >
-            {saving ? (
-              <>
-                <span className="material-symbols-outlined text-white animate-spin" style={{ fontSize: '20px' }}>
-                  progress_activity
-                </span>
-                <span>Saving to Database…</span>
-              </>
-            ) : (
-              <>
-                <span>Save Application</span>
-                <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>arrow_forward</span>
-              </>
-            )}
-          </button>
+          <div className="w-full max-w-2xl mx-auto">
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full h-[52px] font-semibold text-[17px] text-white rounded-[14px] flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed select-none"
+              style={{
+                background: saving
+                  ? '#339DFF'
+                  : 'linear-gradient(180deg, #339DFF 0%, #007AFF 100%)',
+                boxShadow: '0 4px 16px rgba(0,122,255,0.4), 0 1px 4px rgba(0,122,255,0.2)',
+              }}
+            >
+              {saving ? (
+                <>
+                  <span className="material-symbols-outlined text-white animate-spin" style={{ fontSize: '20px' }}>
+                    progress_activity
+                  </span>
+                  <span>Saving to Database…</span>
+                </>
+              ) : (
+                <>
+                  <span>Save Application</span>
+                  <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>arrow_forward</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </>

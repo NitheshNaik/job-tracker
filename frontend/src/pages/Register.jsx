@@ -91,11 +91,11 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col" style={{ background: '#F2F2F7' }}>
+    <div className="min-h-dvh flex flex-col md:justify-center md:items-center md:py-12" style={{ background: '#F2F2F7' }}>
 
       {/* ── Top header ───────────────────────────────────────────────────────── */}
       <div
-        className="flex-shrink-0 flex flex-col items-center justify-end px-6 pb-6"
+        className="flex-shrink-0 flex flex-col items-center justify-end px-6 pb-6 md:pt-0 md:min-h-0"
         style={{ paddingTop: 'max(3.5rem, env(safe-area-inset-top) + 1.5rem)', minHeight: '190px' }}
       >
         <div
@@ -119,7 +119,7 @@ export default function Register() {
       </div>
 
       {/* ── Form ─────────────────────────────────────────────────────────────── */}
-      <div className="flex-1 px-5 pb-10 space-y-4">
+      <div className="flex-1 px-5 pb-10 space-y-4 md:flex-initial md:w-full md:max-w-md md:px-0 md:pb-0">
         <div
           className="rounded-[20px] p-5 space-y-4"
           style={{

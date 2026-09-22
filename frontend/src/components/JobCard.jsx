@@ -39,12 +39,12 @@ function StatusPickerModal({ currentStatus, onSelect, onClose }) {
   const statuses = ['Applied', 'Assessment', 'Interviewing', 'Offer', 'Ghosted', 'Rejected'];
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end"
+      className="fixed inset-0 z-50 flex items-end md:items-center md:justify-center md:p-4"
       style={{ background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[390px] mx-auto rounded-t-[28px] p-5 pb-8 space-y-3 animate-slideUp"
+        className="w-full max-w-[390px] mx-auto rounded-t-[28px] p-5 pb-8 space-y-3 animate-slideUp md:max-w-md md:rounded-[24px] md:p-6 md:pb-6 md:shadow-2xl"
         style={{
           background: 'rgba(255,255,255,0.96)',
           backdropFilter: 'blur(24px) saturate(180%)',
@@ -54,7 +54,7 @@ function StatusPickerModal({ currentStatus, onSelect, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle */}
-        <div className="w-9 h-1 rounded-full mx-auto mb-1" style={{ background: 'rgba(60,60,67,0.18)' }} />
+        <div className="w-9 h-1 rounded-full mx-auto mb-1 md:hidden" style={{ background: 'rgba(60,60,67,0.18)' }} />
 
         <div className="flex items-center justify-between mb-1">
           <p className="text-[16px] font-semibold" style={{ color: '#000' }}>Change Status</p>

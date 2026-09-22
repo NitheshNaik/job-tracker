@@ -95,7 +95,7 @@ export default function Dashboard() {
 
       {/* ── iOS Navigation Bar ─────────────────────────────────────────────── */}
       <header
-        className="sticky top-0 z-40 flex items-center justify-between px-4 py-3"
+        className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 md:px-8 md:py-4"
         style={{
           background: 'rgba(242,242,247,0.88)',
           backdropFilter: 'blur(24px) saturate(180%)',
@@ -103,6 +103,7 @@ export default function Dashboard() {
           borderBottom: '0.5px solid rgba(60,60,67,0.18)',
         }}
       >
+        <div className="w-full max-w-6xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           {/* User avatar — initials derived from name or email */}
           <div
@@ -154,10 +155,11 @@ export default function Dashboard() {
             </span>
           </button>
         </div>
+        </div>
       </header>
 
       {/* ── Content ──────────────────────────────────────────────────────────── */}
-      <main className="px-4 pt-5 space-y-5 flex-1">
+      <main className="px-4 pt-5 space-y-5 flex-1 md:px-8 md:pt-6 md:space-y-6 md:max-w-6xl md:mx-auto">
 
         {/* Greeting + Date */}
         <section>
@@ -189,41 +191,39 @@ export default function Dashboard() {
           <SectionLabel>Overview</SectionLabel>
 
           {loading ? (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                <SkeletonStat /><SkeletonStat />
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
+              <SkeletonStat /><SkeletonStat />
+              <div className="col-span-2 md:col-span-1">
+                <SkeletonBanner />
               </div>
-              <SkeletonBanner />
-            </>
+            </div>
           ) : !error && (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                <StatCard
-                  label="Applied"
-                  value={total}
-                  iconName="send"
-                  iconBg="rgba(0,122,255,0.12)"
-                  iconColor="#007AFF"
-                  badge={
-                    thisMonth > 0
-                      ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: 'rgba(52,199,89,0.12)', color: '#34C759' }}>
-                          +{thisMonth} this month
-                        </span>
-                      : <span className="text-[11px] font-medium" style={{ color: '#8E8E93' }}>0 this month</span>
-                  }
-                />
-                <StatCard
-                  label="Responses"
-                  value={responses}
-                  iconName="forum"
-                  iconBg="rgba(255,149,0,0.12)"
-                  iconColor="#FF9500"
-                  sub={responses > 0 ? `${stats?.responseRate ?? 0}% response rate` : 'Awaiting responses'}
-                />
-              </div>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
+              <StatCard
+                label="Applied"
+                value={total}
+                iconName="send"
+                iconBg="rgba(0,122,255,0.12)"
+                iconColor="#007AFF"
+                badge={
+                  thisMonth > 0
+                    ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: 'rgba(52,199,89,0.12)', color: '#34C759' }}>
+                        +{thisMonth} this month
+                      </span>
+                    : <span className="text-[11px] font-medium" style={{ color: '#8E8E93' }}>0 this month</span>
+                }
+              />
+              <StatCard
+                label="Responses"
+                value={responses}
+                iconName="forum"
+                iconBg="rgba(255,149,0,0.12)"
+                iconColor="#FF9500"
+                sub={responses > 0 ? `${stats?.responseRate ?? 0}% response rate` : 'Awaiting responses'}
+              />
 
               {/* Rejection Rate Card */}
-              <div className="ios-card p-4 space-y-3">
+              <div className="ios-card p-4 space-y-3 col-span-2 md:col-span-1 flex flex-col justify-between">
                 <div className="flex items-center justify-between">
                   <span className="text-[12px] font-semibold" style={{ color: '#8E8E93' }}>Rejection Rate</span>
                   <span
@@ -278,7 +278,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </section>
 
@@ -340,7 +340,7 @@ export default function Dashboard() {
 
           {/* Follow-up rows */}
           {!loading && !error && followUps.length > 0 && (
-            <div className="space-y-2">
+            <div className="space-y-2 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3">
               {followUps.map((job) => {
                 const av = getAvatarStyle(job.companyName);
                 const days = daysAgo(job.dateApplied);
