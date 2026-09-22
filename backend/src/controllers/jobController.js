@@ -17,11 +17,9 @@ export const createJob = async (req, res) => {
     if (data.position  && !data.jobTitle)         data.jobTitle        = data.position;
     if (data.link      && !data.jobLink)          data.jobLink         = data.link;
     if (data.url       && !data.jobLink)          data.jobLink         = data.url;
-    if (data.referral  && !data.referralContact)  data.referralContact = data.referral;
     if (data.resume    && !data.resumeUsed)       data.resumeUsed      = data.resume;
 
-    // Clean empty string dates so Mongoose doesn't throw CastError
-    if (!data.followUpDate) delete data.followUpDate;
+    // Clean empty string dates so Mongoose defaults kick in / avoids CastError
     if (!data.dateApplied)  delete data.dateApplied;
 
     // ── Bind to the authenticated user ────────────────────────────────────────
@@ -65,7 +63,6 @@ export const updateJob = async (req, res) => {
     const data = { ...req.body };
     if (data.company && !data.companyName) data.companyName = data.company;
     if (data.title   && !data.jobTitle)   data.jobTitle    = data.title;
-    if (!data.followUpDate) delete data.followUpDate;
     if (!data.dateApplied)  delete data.dateApplied;
 
     // Scope to owner — prevents users editing each other's applications

@@ -95,7 +95,7 @@ export default function Dashboard() {
 
       {/* ── iOS Navigation Bar ─────────────────────────────────────────────── */}
       <header
-        className="sticky top-0 z-40 flex items-center justify-between px-4 pt-12 pb-3"
+        className="sticky top-0 z-40 flex items-center justify-between px-4 py-3"
         style={{
           background: 'rgba(242,242,247,0.88)',
           backdropFilter: 'blur(24px) saturate(180%)',

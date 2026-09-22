@@ -99,7 +99,7 @@ export function useJobs({ status = 'All', source = 'All Sources', sort = 'newest
       if (payload.title && !payload.jobTitle) payload.jobTitle = payload.title;
 
       // Clean empty optional strings
-      ['jobLink', 'referralContact', 'resumeUsed', 'notes', 'followUpDate'].forEach((k) => {
+      ['jobLink', 'resumeUsed', 'notes'].forEach((k) => {
         if (!payload[k] || (typeof payload[k] === 'string' && !payload[k].trim())) {
           delete payload[k];
         }

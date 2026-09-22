@@ -56,11 +56,11 @@ function AppShell() {
   const { token } = useAuth();
 
   return (
-    <div className="flex min-h-dvh items-start justify-center bg-[#E5E5EA] sm:py-8">
-      <div className="relative w-full max-w-[390px] min-h-dvh bg-[#F2F2F7] flex flex-col overflow-hidden sm:min-h-[844px] sm:rounded-[52px] sm:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.35),0_0_0_1px_rgba(0,0,0,0.08)] sm:border sm:border-white/20">
+    <div className="flex h-dvh overflow-hidden items-start justify-center bg-[#E5E5EA] sm:py-8 sm:items-center">
+      <div className="relative w-full max-w-[390px] h-dvh bg-[#F2F2F7] flex flex-col overflow-hidden sm:h-[844px] sm:max-h-[844px] sm:rounded-[52px] sm:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.35),0_0_0_1px_rgba(0,0,0,0.08)] sm:border sm:border-white/20">
 
         {/* Scrollable page content */}
-        <main className={`flex-1 overflow-y-auto ${token ? 'pb-[5rem]' : ''}`}>
+        <main className={`flex-1 overflow-y-auto min-h-0 ${token ? 'pb-[5rem]' : ''}`}>
           <Routes>
             {/* ── Public auth routes ── */}
             <Route path="/login"    element={<AuthRoute><Login /></AuthRoute>} />

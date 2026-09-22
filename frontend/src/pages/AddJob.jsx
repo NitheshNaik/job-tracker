@@ -5,7 +5,6 @@ import api from '../api/jobApi';
 // ─── Options (mirror backend schema enums exactly) ────────────────────────────
 const STATUSES       = ['Applied', 'Assessment', 'Interviewing', 'Offer', 'Ghosted', 'Rejected'];
 const SOURCES        = ['LinkedIn', 'Wellfound', 'Company Website', 'Referral', 'Cold Email', 'Other'];
-const RESUME_OPTIONS = ['Full-Stack v2', 'Frontend v1', 'General'];
 
 // ─── iOS Filled Input ─────────────────────────────────────────────────────────
 function TextInput({ label, icon, type = 'text', value, onChange, placeholder, required }) {
@@ -111,18 +110,14 @@ function Toast({ type, message }) {
 }
 
 const EMPTY = {
-  companyName:     '',
-  company:         '',
-  jobTitle:        '',
-  title:           '',
-  jobLink:         '',
-  referralContact: '',
-  status:          'Applied',
-  source:          'LinkedIn',
-  resumeUsed:      '',
-  dateApplied:     new Date().toISOString().split('T')[0],
-  followUpDate:    '',
-  notes:           '',
+  companyName: '',
+  company:     '',
+  jobTitle:    '',
+  title:       '',
+  jobLink:     '',
+  status:      'Applied',
+  source:      'LinkedIn',
+  notes:       '',
 };
 
 export default function AddJob() {
@@ -177,12 +172,8 @@ export default function AddJob() {
         status: form.status || 'Applied',
         source: form.source || 'Other',
       };
-      if (form.jobLink?.trim())         payload.jobLink         = form.jobLink.trim();
-      if (form.referralContact?.trim()) payload.referralContact = form.referralContact.trim();
-      if (form.resumeUsed?.trim())      payload.resumeUsed      = form.resumeUsed.trim();
-      if (form.notes?.trim())           payload.notes           = form.notes.trim();
-      if (form.followUpDate)            payload.followUpDate    = form.followUpDate;
-      if (form.dateApplied)             payload.dateApplied     = form.dateApplied;
+      if (form.jobLink?.trim()) payload.jobLink = form.jobLink.trim();
+      if (form.notes?.trim())   payload.notes   = form.notes.trim();
 
       await api.post('/jobs', payload);
       showToast('success', 'Application saved successfully! 🎉');
@@ -215,7 +206,7 @@ export default function AddJob() {
 
         {/* ── iOS Modal Navigation Bar ──────────────────────────────────────── */}
         <header
-          className="w-full sticky top-0 z-40 flex items-center justify-between px-4 pt-12 pb-3"
+          className="w-full sticky top-0 z-40 flex items-center justify-between px-4 py-3"
           style={{
             background: 'rgba(242,242,247,0.90)',
             backdropFilter: 'blur(24px) saturate(180%)',
@@ -309,62 +300,36 @@ export default function AddJob() {
                 )}
               </div>
 
-              <TextInput
-                label="Referral Contact"
-                value={form.referralContact}
-                onChange={set('referralContact')}
-                placeholder="e.g. Jane Doe (optional)"
-              />
             </div>
           </section>
 
           {/* Chip selectors */}
           <section className="space-y-5">
-            <ChipRow label="Stage / Status"     options={STATUSES}       selected={form.status}     onSelect={(v) => pick('status', v)} />
-            <ChipRow label="Application Source" options={SOURCES}        selected={form.source}     onSelect={(v) => pick('source', v)} />
-            <ChipRow label="Resume Version"     options={RESUME_OPTIONS} selected={form.resumeUsed} onSelect={(v) => pick('resumeUsed', v)} />
+            <ChipRow label="Stage / Status"     options={STATUSES} selected={form.status} onSelect={(v) => pick('status', v)} />
+            <ChipRow label="Application Source" options={SOURCES}  selected={form.source} onSelect={(v) => pick('source', v)} />
           </section>
 
-          {/* Dates + Notes */}
+          {/* Notes */}
           <section
             className="rounded-[16px] overflow-hidden"
             style={{ background: '#FFFFFF', boxShadow: '0 1px 0 rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04)' }}
           >
-            <div className="p-4 space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <TextInput
-                  label="Date Applied"
-                  icon="event"
-                  type="date"
-                  value={form.dateApplied}
-                  onChange={set('dateApplied')}
-                />
-                <TextInput
-                  label="Follow-up Date"
-                  icon="calendar_today"
-                  type="date"
-                  value={form.followUpDate}
-                  onChange={set('followUpDate')}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#8E8E93' }}>
-                  Notes &amp; Highlights
-                </label>
-                <textarea
-                  value={form.notes}
-                  onChange={set('notes')}
-                  placeholder="Key requirements, recruiter notes, salary range…"
-                  rows={3}
-                  className="w-full p-3.5 text-[15px] rounded-[10px] resize-none outline-none transition-all duration-200"
-                  style={{
-                    background: 'rgba(120,120,128,0.12)',
-                    color: '#000',
-                    caretColor: '#007AFF',
-                  }}
-                />
-              </div>
+            <div className="p-4 space-y-2">
+              <label className="text-[11px] font-semibold uppercase tracking-wider block" style={{ color: '#8E8E93' }}>
+                Notes &amp; Highlights
+              </label>
+              <textarea
+                value={form.notes}
+                onChange={set('notes')}
+                placeholder="Key requirements, recruiter notes, salary range…"
+                rows={4}
+                className="w-full p-3.5 text-[15px] rounded-[10px] resize-none outline-none transition-all duration-200"
+                style={{
+                  background: 'rgba(120,120,128,0.12)',
+                  color: '#000',
+                  caretColor: '#007AFF',
+                }}
+              />
             </div>
           </section>
         </div>

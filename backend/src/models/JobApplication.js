@@ -48,19 +48,9 @@ const jobApplicationSchema = new mongoose.Schema(
       default: 'Applied',
     },
 
-    referralContact: {
-      type: String,
-      trim: true,
-      alias: 'referral',
-    },
-
     dateApplied: {
       type: Date,
       default: Date.now,
-    },
-
-    followUpDate: {
-      type: Date,
     },
 
     nextSteps: {
